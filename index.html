@@ -1,0 +1,71 @@
+<div style="text-align: center;">
+  <h2>Interactive Derivative Visualizer</h2>
+  <p>Move the slider to change <em>x</em> and see the tangent line update.</p>
+  <canvas id="graphCanvas" width="600" height="400"></canvas>
+  <br>
+  <input type="range" id="xSlider" min="-10" max="10" step="0.1" value="2" style="width: 80%;">
+</div>
+
+<script>
+const canvas = document.getElementById("graphCanvas");
+const ctx = canvas.getContext("2d");
+const slider = document.getElementById("xSlider");
+
+// Define the function and its derivative
+function f(x) { return 0.1*x*x*x - x + 2; }
+function fPrime(x) { return 0.3*x*x - 1; }
+
+function drawGraph(x0) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Scale
+  const scaleX = 30, scaleY = 30;
+  const originX = canvas.width/2, originY = canvas.height/2;
+
+  // Axes
+  ctx.strokeStyle = "#888";
+  ctx.beginPath();
+  ctx.moveTo(0, originY);
+  ctx.lineTo(canvas.width, originY);
+  ctx.moveTo(originX, 0);
+  ctx.lineTo(originX, canvas.height);
+  ctx.stroke();
+
+  // Function curve
+  ctx.strokeStyle = "blue";
+  ctx.beginPath();
+  for (let px = 0; px < canvas.width; px++) {
+    const x = (px - originX)/scaleX;
+    const y = f(x);
+    const py = originY - y*scaleY;
+    if (px === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Point on curve
+  const x = x0, y = f(x);
+  const px = originX + x*scaleX;
+  const py = originY - y*scaleY;
+  ctx.fillStyle = "red";
+  ctx.beginPath();
+  ctx.arc(px, py, 5, 0, 2*Math.PI);
+  ctx.fill();
+
+  // Tangent line
+  const slope = fPrime(x);
+  ctx.strokeStyle = "green";
+  ctx.beginPath();
+  ctx.moveTo(0, py - slope*(0 - px));
+  ctx.lineTo(canvas.width, py - slope*(canvas.width - px));
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = "black";
+  ctx.fillText(`x = ${x.toFixed(2)}, f(x) = ${y.toFixed(2)}, f'(x) = ${slope.toFixed(2)}`, 20, 20);
+}
+
+// Initial draw
+drawGraph(parseFloat(slider.value));
+slider.addEventListener("input", () => drawGraph(parseFloat(slider.value)));
+</script>
